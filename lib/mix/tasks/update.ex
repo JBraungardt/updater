@@ -7,15 +7,11 @@ defmodule Mix.Tasks.Update do
   def run(_) do
     base_dir = File.cwd!()
 
-    unless File.exists?(base_dir) do
-      Mix.raise("Directory #{base_dir} does not exist")
+    if File.exists?("#{base_dir}/.dicts") do
+      File.stream!("#{base_dir}/.dicts")
+    else
+      ["."]
     end
-
-    unless File.exists?("#{base_dir}/.dicts") do
-      Mix.raise("File #{base_dir}/.dicts does not exist")
-    end
-
-    File.stream!("#{base_dir}/.dicts")
     |> Enum.map(&String.trim/1)
     |> Enum.flat_map(&collect_repos(&1, base_dir))
     |> Task.async_stream(&process_repo/1,
