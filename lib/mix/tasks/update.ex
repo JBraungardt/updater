@@ -5,7 +5,7 @@ defmodule Mix.Tasks.Update do
 
   @impl true
   def run(_) do
-    base_dir = Application.fetch_env!(:updater, :base_dir)
+    base_dir = File.cwd!()
 
     unless File.exists?(base_dir) do
       Mix.raise("Directory #{base_dir} does not exist")
@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Update do
   end
 
   defp process_repo(dir) do
-    base_dir = Application.fetch_env!(:updater, :base_dir)
+    base_dir = File.cwd!()
     branch = current_branch_name(dir)
 
     System.cmd("git", ~w(fetch), cd: dir, stderr_to_stdout: true)
