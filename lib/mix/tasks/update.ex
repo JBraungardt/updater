@@ -66,7 +66,7 @@ defmodule Mix.Tasks.Update do
         stderr_to_stdout: true
       )
 
-    changelog <> "\n"
+    reverse_changelog(changelog) <> "\n"
   end
 
   defp changes_diff(dir, branch) do
@@ -114,5 +114,12 @@ defmodule Mix.Tasks.Update do
     else
       pull_output
     end
+  end
+
+  defp reverse_changelog(changelog) do
+    changelog
+    |> String.split("\n")
+    |> Enum.reverse()
+    |> Enum.join("\n")
   end
 end
