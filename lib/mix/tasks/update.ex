@@ -56,7 +56,13 @@ defmodule Mix.Tasks.Update do
 
   defp current_branch_name(dir) do
     {branch, 0} = System.cmd("git", ~w(branch --show-current), cd: dir, stderr_to_stdout: true)
-    String.trim(branch)
+    branch = String.trim(branch)
+
+    if branch == "" do
+      current_branch_name(dir)
+    else
+      branch
+    end
   end
 
   defp changelog(dir, branch) do
