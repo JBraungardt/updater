@@ -17,7 +17,7 @@ defmodule GitWorker do
   end
 
   def current_branch_name(dir) do
-    {branch, 0} = System.cmd("git", ~w(branch --show-current), cd: dir, stderr_to_stdout: true)
+    branch = git(dir, ~w(branch --show-current))
     branch = String.trim(branch)
 
     if branch == "" do
@@ -25,6 +25,17 @@ defmodule GitWorker do
     else
       branch
     end
+  end
+
+  def git(repo_dir, args) when is_list(args) do
+    {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
+
+    if exit_code != 0 do
+      IO.write(IO.ANSI.red() <> "git #{args} failed" <> IO.ANSI.reset() <> output)
+      exit({:shutdown, 1})
+    end
+
+    output
   end
 
   defp collect_repos(dir, base_dir) do

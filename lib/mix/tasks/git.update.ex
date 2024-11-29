@@ -12,7 +12,8 @@ defmodule Mix.Tasks.Git.Update do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 
-    System.cmd("git", ~w(fetch), cd: dir, stderr_to_stdout: true)
+    GitWorker.git(dir, ~w(fetch))
+
     changelog = changelog(dir, branch)
     diff = changes_diff(dir, branch)
     pull = pull(dir)
@@ -30,11 +31,8 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp changelog(dir, branch) do
-    {changelog, 0} =
-      System.cmd("git", ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""],
-        cd: dir,
-        stderr_to_stdout: true
-      )
+    changelog =
+      GitWorker.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""])
 
     reverse_changelog(changelog) <> "\n"
   end
@@ -47,11 +45,7 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp file_change_diff(dir, branch, file_name) do
-    {diff, 0} =
-      System.cmd("git", ["diff", "#{branch}..origin/#{branch}", "--", file_name],
-        cd: dir,
-        stderr_to_stdout: true
-      )
+    diff = GitWorker.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name])
 
     if String.length(diff) == 0 do
       ""
@@ -73,7 +67,7 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   def pull(dir) do
-    {pull_output, 0} = System.cmd("git", ["pull"], cd: dir, stderr_to_stdout: true)
+    pull_output = GitWorker.git(dir, ~w(pull))
 
     up_to_date =
       ["Already up to date.", "Bereits aktuell."]

@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Git.Status do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 
-    {status, 0} = System.cmd("git", ~w(status --porcelain), cd: dir, stderr_to_stdout: true)
+    status = GitWorker.git(dir, ~w(status --porcelain))
 
     if String.length(status) > 0 do
       IO.ANSI.light_blue() <>

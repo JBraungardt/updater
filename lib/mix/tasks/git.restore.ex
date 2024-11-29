@@ -12,10 +12,10 @@ defmodule Mix.Tasks.Git.Restore do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 
-    {status, 0} = System.cmd("git", ~w(status --porcelain), cd: dir, stderr_to_stdout: true)
+    status = GitWorker.git(dir, ~w(status --porcelain))
 
     if String.length(status) > 0 do
-      {_output, 0} = System.cmd("git", ~w(restore .), cd: dir, stderr_to_stdout: true)
+      GitWorker.git(dir, ~w(restore .))
 
       IO.ANSI.light_blue() <>
         "=== #{Path.relative_to(dir, base_dir)} on #{branch} ===\n" <>
