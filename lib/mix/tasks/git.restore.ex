@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Git.Restore do
       IO.ANSI.light_blue() <>
         "=== #{Path.relative_to(dir, base_dir)} on #{branch} ===\n" <>
         IO.ANSI.reset() <>
-        "restored"
+        "restored\n"
     end
   end
 end
