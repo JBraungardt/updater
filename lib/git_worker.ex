@@ -31,7 +31,13 @@ defmodule GitWorker do
     {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
 
     if exit_code != 0 do
-      IO.write(IO.ANSI.red() <> "git #{args} failed" <> IO.ANSI.reset() <> output)
+      IO.write(
+        IO.ANSI.red() <>
+          "git #{args} failed for #{repo_dir}\n" <>
+          IO.ANSI.reset() <>
+          output
+      )
+
       exit({:shutdown, 1})
     end
 
