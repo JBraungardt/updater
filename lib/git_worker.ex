@@ -4,11 +4,13 @@ defmodule GitWorker do
 
     if File.exists?("#{base_dir}/.dicts") do
       File.stream!("#{base_dir}/.dicts")
+      |> Enum.map(&String.trim/1)
+      |> Enum.flat_map(&collect_repos(&1, base_dir))
     else
-      ["."]
+      (Path.wildcard("*/.git", match_dot: true) ++ Path.wildcard("*/*/.git", match_dot: true))
+      |> Enum.map(&Path.dirname/1)
+      |> Enum.map(&Path.absname(&1, base_dir))
     end
-    |> Enum.map(&String.trim/1)
-    |> Enum.flat_map(&collect_repos(&1, base_dir))
     |> Task.async_stream(action,
       timeout: :infinity,
       ordered: false
