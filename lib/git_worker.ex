@@ -19,13 +19,8 @@ defmodule GitWorker do
   end
 
   def current_branch_name(dir) do
-    branch = git(dir, ~w(branch --show-current))
-    branch = String.trim(branch)
-
-    if branch == "" do
-      current_branch_name(dir)
-    else
-      branch
+    if not is_detached?(dir) do
+      current_branch(dir)
     end
   end
 
@@ -44,6 +39,23 @@ defmodule GitWorker do
     end
 
     output
+  end
+
+  defp is_detached?(dir) do
+    git(dir, ~w(status))
+    |> String.split("\n")
+    |> Enum.any?(&String.starts_with?(&1, "HEAD detached at"))
+  end
+
+  defp current_branch(dir) do
+    branch = git(dir, ~w(branch --show-current))
+    branch = String.trim(branch)
+
+    if branch == "" do
+      current_branch_name(dir)
+    else
+      branch
+    end
   end
 
   defp collect_repos(dir, base_dir) do

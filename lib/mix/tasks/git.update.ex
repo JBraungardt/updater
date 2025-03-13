@@ -9,9 +9,16 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp process_repo(dir) do
-    base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 
+    update(dir, branch)
+  end
+
+  defp update(_dir, nil) do
+    nil
+  end
+
+  defp update(dir, branch) do
     GitWorker.git(dir, ~w(fetch))
 
     changelog = changelog(dir, branch)
@@ -20,7 +27,7 @@ defmodule Mix.Tasks.Git.Update do
 
     if String.length(pull) > 0 do
       IO.ANSI.light_blue() <>
-        "=== #{Path.relative_to(dir, base_dir)} on #{branch} ===\n" <>
+        "=== #{Path.relative_to(dir, File.cwd!())} on #{branch} ===\n" <>
         IO.ANSI.reset() <>
         changelog <>
         "\n" <>
