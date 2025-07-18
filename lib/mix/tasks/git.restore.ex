@@ -5,10 +5,10 @@ defmodule Mix.Tasks.Git.Restore do
 
   @impl true
   def run(_) do
-    GitWorker.process_repos(&restore/1)
+    GitWorker.process_repos(&restore/2)
   end
 
-  defp restore(dir) do
+  defp restore(dir, _opts) do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 

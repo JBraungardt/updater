@@ -5,10 +5,10 @@ defmodule Mix.Tasks.Git.Branch do
 
   @impl true
   def run(_) do
-    GitWorker.process_repos(&branch/1)
+    GitWorker.process_repos(&branch/2)
   end
 
-  defp branch(dir) do
+  defp branch(dir, _opts) do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 

@@ -4,26 +4,37 @@ defmodule Mix.Tasks.Git.Update do
   @shortdoc "Updates the repositories"
 
   @impl true
-  def run(_) do
-    GitWorker.process_repos(&process_repo/1)
+  def run(args) do
+    {opts, _} = OptionParser.parse!(args, strict: [stash: :boolean])
+    GitWorker.process_repos(&process_repo/2, opts)
   end
 
-  defp process_repo(dir) do
+  defp process_repo(dir, opts) do
     branch = GitWorker.current_branch_name(dir)
 
-    update(dir, branch)
+    update(dir, branch, opts)
   end
 
-  defp update(_dir, nil) do
+  defp update(_dir, nil, _opts) do
     nil
   end
 
-  defp update(dir, branch) do
+  defp update(dir, branch, opts) do
+    stash = opts[:stash]
+
+    if stash do
+      GitWorker.git(dir, ~w(stash))
+    end
+
     GitWorker.git(dir, ~w(fetch))
 
     changelog = changelog(dir, branch)
     diff = changes_diff(dir, branch)
     pull = pull(dir)
+
+    if stash && stash_count(dir) > 0 do
+      GitWorker.git(dir, ~w(stash pop))
+    end
 
     if String.length(pull) > 0 do
       IO.ANSI.light_blue() <>
@@ -92,5 +103,11 @@ defmodule Mix.Tasks.Git.Update do
     |> String.split("\n")
     |> Enum.reverse()
     |> Enum.join("\n")
+  end
+
+  defp stash_count(dir) do
+    GitWorker.git(dir, ~w(stash list))
+    |> String.split("\n")
+    |> Enum.count(&(String.length(&1) > 0))
   end
 end

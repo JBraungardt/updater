@@ -1,5 +1,5 @@
 defmodule GitWorker do
-  def process_repos(action) do
+  def process_repos(action, opts \\ []) do
     base_dir = File.cwd!()
 
     if File.exists?("#{base_dir}/.dicts") do
@@ -11,7 +11,7 @@ defmodule GitWorker do
       |> Enum.map(&Path.dirname/1)
       |> Enum.map(&Path.absname(&1, base_dir))
     end
-    |> Task.async_stream(action,
+    |> Task.async_stream(fn dir -> action.(dir, opts) end,
       timeout: :infinity,
       ordered: false
     )

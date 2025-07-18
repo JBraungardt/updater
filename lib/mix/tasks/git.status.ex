@@ -5,10 +5,10 @@ defmodule Mix.Tasks.Git.Status do
 
   @impl true
   def run(_) do
-    GitWorker.process_repos(&get_status/1)
+    GitWorker.process_repos(&get_status/2)
   end
 
-  defp get_status(dir) do
+  defp get_status(dir, _opts) do
     base_dir = File.cwd!()
     branch = GitWorker.current_branch_name(dir)
 
