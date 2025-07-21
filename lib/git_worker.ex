@@ -19,7 +19,9 @@ defmodule GitWorker do
   end
 
   def current_branch_name(dir) do
-    if not is_detached?(dir) do
+    if is_detached?(dir) do
+      {:error, "HEAD detached"}
+    else
       current_branch(dir)
     end
   end
@@ -35,26 +37,31 @@ defmodule GitWorker do
           output
       )
 
-      exit({:shutdown, 1})
+      {:error, output}
     end
 
-    output
+    {:ok, output}
   end
 
   defp is_detached?(dir) do
-    git(dir, ~w(status))
-    |> String.split("\n")
-    |> Enum.any?(&String.starts_with?(&1, "HEAD detached at"))
+    with {:ok, output} <- git(dir, ~w(status)) do
+      output
+      |> String.split("\n")
+      |> Enum.any?(&String.starts_with?(&1, "HEAD detached at"))
+    else
+      _ -> false
+    end
   end
 
   defp current_branch(dir) do
-    branch = git(dir, ~w(branch --show-current))
-    branch = String.trim(branch)
+    with {:ok, branch} <- git(dir, ~w(branch --show-current)) do
+      branch = String.trim(branch)
 
-    if branch == "" do
-      current_branch_name(dir)
-    else
-      branch
+      if branch == "" do
+        current_branch_name(dir)
+      else
+        {:ok, branch}
+      end
     end
   end
 

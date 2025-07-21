@@ -10,14 +10,17 @@ defmodule Mix.Tasks.Git.Branch do
 
   defp branch(dir, _opts) do
     base_dir = File.cwd!()
-    branch = GitWorker.current_branch_name(dir)
 
-    IO.ANSI.light_blue() <>
-      "=== #{Path.relative_to(dir, base_dir)} on " <>
-      IO.ANSI.yellow() <>
-      "#{branch} " <>
+    with {:ok, branch} <- GitWorker.current_branch_name(dir) do
       IO.ANSI.light_blue() <>
-      " ===\n" <>
-      IO.ANSI.reset()
+        "=== #{Path.relative_to(dir, base_dir)} on " <>
+        IO.ANSI.yellow() <>
+        "#{branch} " <>
+        IO.ANSI.light_blue() <>
+        " ===\n" <>
+        IO.ANSI.reset()
+    else
+      _ -> nil
+    end
   end
 end

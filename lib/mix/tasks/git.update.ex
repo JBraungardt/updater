@@ -10,49 +10,52 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp process_repo(dir, opts) do
-    branch = GitWorker.current_branch_name(dir)
+    with {:ok, branch} <- GitWorker.current_branch_name(dir),
+         :ok <- maybe_stash(dir, opts),
+         {:ok, _} <- GitWorker.git(dir, ~w(fetch)) do
+      changelog = changelog(dir, branch)
+      diff = changes_diff(dir, branch)
+      pull = pull(dir)
 
-    update(dir, branch, opts)
-  end
+      maybe_un_stash(dir, opts)
 
-  defp update(_dir, nil, _opts) do
-    nil
-  end
-
-  defp update(dir, branch, opts) do
-    stash = opts[:stash]
-
-    if stash do
-      GitWorker.git(dir, ~w(stash))
+      if String.length(pull) > 0 do
+        IO.ANSI.light_blue() <>
+          "=== #{Path.relative_to(dir, File.cwd!())} on #{branch} ===\n" <>
+          IO.ANSI.reset() <>
+          changelog <>
+          "\n" <>
+          pull <>
+          diff <>
+          "\n"
+      end
+    else
+      _ -> nil
     end
+  end
 
-    GitWorker.git(dir, ~w(fetch))
+  defp maybe_stash(dir, opts) do
+    if opts[:stash] do
+      {state, _} = GitWorker.git(dir, ~w(stash))
+      state
+    else
+      :ok
+    end
+  end
 
-    changelog = changelog(dir, branch)
-    diff = changes_diff(dir, branch)
-    pull = pull(dir)
-
-    if stash && stash_count(dir) > 0 do
+  defp maybe_un_stash(dir, opts) do
+    if opts[:stash] && stash_count(dir) > 0 do
       GitWorker.git(dir, ~w(stash pop))
-    end
-
-    if String.length(pull) > 0 do
-      IO.ANSI.light_blue() <>
-        "=== #{Path.relative_to(dir, File.cwd!())} on #{branch} ===\n" <>
-        IO.ANSI.reset() <>
-        changelog <>
-        "\n" <>
-        pull <>
-        diff <>
-        "\n"
     end
   end
 
   defp changelog(dir, branch) do
-    changelog =
-      GitWorker.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""])
-
-    reverse_changelog(changelog) <> "\n"
+    with {:ok, changelog} <-
+           GitWorker.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""]) do
+      reverse_changelog(changelog) <> "\n"
+    else
+      _ -> ""
+    end
   end
 
   defp changes_diff(dir, branch) do
@@ -63,12 +66,12 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp file_change_diff(dir, branch, file_name) do
-    diff = GitWorker.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name])
-
-    if String.length(diff) == 0 do
-      ""
-    else
+    with {:ok, diff} <-
+           GitWorker.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name]),
+         true <- String.length(diff) > 0 do
       "\n=== #{file_name} ===\n" <> print_file_diff(diff)
+    else
+      _ -> ""
     end
   end
 
@@ -85,7 +88,7 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   def pull(dir) do
-    pull_output = GitWorker.git(dir, ~w(pull))
+    {_, pull_output} = GitWorker.git(dir, ~w(pull))
 
     up_to_date =
       ["Already up to date.", "Bereits aktuell."]
@@ -106,8 +109,12 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp stash_count(dir) do
-    GitWorker.git(dir, ~w(stash list))
-    |> String.split("\n")
-    |> Enum.count(&(String.length(&1) > 0))
+    with {:ok, output} <- GitWorker.git(dir, ~w(stash list)) do
+      output
+      |> String.split("\n")
+      |> Enum.count(&(String.length(&1) > 0))
+    else
+      _ -> 0
+    end
   end
 end
