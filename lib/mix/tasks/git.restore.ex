@@ -9,15 +9,11 @@ defmodule Mix.Tasks.Git.Restore do
   end
 
   defp restore(dir, _opts) do
-    base_dir = File.cwd!()
-
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          {:ok, status} <- GitCommand.status(dir),
          true <- String.length(status) > 0,
          {:ok, _} <- GitCommand.git(dir, ~w(restore .)) do
-      IO.ANSI.light_blue() <>
-        "=== #{Path.relative_to(dir, base_dir)} on #{branch} ===\n" <>
-        IO.ANSI.reset() <>
+      OutputFormatter.repo_header(dir, branch) <>
         "restored\n"
     else
       _ -> nil

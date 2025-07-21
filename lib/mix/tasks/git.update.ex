@@ -20,9 +20,7 @@ defmodule Mix.Tasks.Git.Update do
       maybe_un_stash(dir, opts)
 
       if String.length(pull) > 0 do
-        IO.ANSI.light_blue() <>
-          "=== #{Path.relative_to(dir, File.cwd!())} on #{branch} ===\n" <>
-          IO.ANSI.reset() <>
+        OutputFormatter.repo_header(dir, branch) <>
           changelog <>
           "\n" <>
           pull <>
@@ -69,22 +67,10 @@ defmodule Mix.Tasks.Git.Update do
     with {:ok, diff} <-
            GitCommand.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name]),
          true <- String.length(diff) > 0 do
-      "\n=== #{file_name} ===\n" <> print_file_diff(diff)
+      "\n=== #{file_name} ===\n" <> OutputFormatter.diff(diff)
     else
       _ -> ""
     end
-  end
-
-  defp print_file_diff(diff) do
-    String.split(diff, "\n")
-    |> Enum.map(fn line ->
-      cond do
-        String.starts_with?(line, "-") -> IO.ANSI.red() <> line <> IO.ANSI.reset()
-        String.starts_with?(line, "+") -> IO.ANSI.green() <> line <> IO.ANSI.reset()
-        true -> line
-      end
-    end)
-    |> Enum.join("\n")
   end
 
   def pull(dir) do

@@ -9,15 +9,10 @@ defmodule Mix.Tasks.Git.Status do
   end
 
   defp get_status(dir, _opts) do
-    base_dir = File.cwd!()
-
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          {:ok, status} <- GitCommand.status(dir),
          true <- String.length(status) > 0 do
-      IO.ANSI.light_blue() <>
-        "=== #{Path.relative_to(dir, base_dir)} on #{branch} ===\n" <>
-        IO.ANSI.reset() <>
-        status
+      OutputFormatter.repo_header(dir, branch) <> status
     else
       _ -> nil
     end

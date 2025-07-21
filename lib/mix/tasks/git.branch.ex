@@ -9,16 +9,8 @@ defmodule Mix.Tasks.Git.Branch do
   end
 
   defp branch(dir, _opts) do
-    base_dir = File.cwd!()
-
     with {:ok, branch} <- GitCommand.current_branch_name(dir) do
-      IO.ANSI.light_blue() <>
-        "=== #{Path.relative_to(dir, base_dir)} on " <>
-        IO.ANSI.yellow() <>
-        "#{branch} " <>
-        IO.ANSI.light_blue() <>
-        " ===\n" <>
-        IO.ANSI.reset()
+      OutputFormatter.repo_header(dir, branch)
     else
       _ -> nil
     end
