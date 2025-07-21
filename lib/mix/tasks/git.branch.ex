@@ -5,13 +5,13 @@ defmodule Mix.Tasks.Git.Branch do
 
   @impl true
   def run(_) do
-    GitWorker.process_repos(&branch/2)
+    RepoWorker.process_repos(&branch/2)
   end
 
   defp branch(dir, _opts) do
     base_dir = File.cwd!()
 
-    with {:ok, branch} <- GitWorker.current_branch_name(dir) do
+    with {:ok, branch} <- GitCommand.current_branch_name(dir) do
       IO.ANSI.light_blue() <>
         "=== #{Path.relative_to(dir, base_dir)} on " <>
         IO.ANSI.yellow() <>

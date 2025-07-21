@@ -6,13 +6,13 @@ defmodule Mix.Tasks.Git.Update do
   @impl true
   def run(args) do
     {opts, _} = OptionParser.parse!(args, strict: [stash: :boolean])
-    GitWorker.process_repos(&process_repo/2, opts)
+    RepoWorker.process_repos(&process_repo/2, opts)
   end
 
   defp process_repo(dir, opts) do
-    with {:ok, branch} <- GitWorker.current_branch_name(dir),
+    with {:ok, branch} <- GitCommand.current_branch_name(dir),
          :ok <- maybe_stash(dir, opts),
-         {:ok, _} <- GitWorker.git(dir, ~w(fetch)) do
+         {:ok, _} <- GitCommand.git(dir, ~w(fetch)) do
       changelog = changelog(dir, branch)
       diff = changes_diff(dir, branch)
       pull = pull(dir)
@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Git.Update do
 
   defp maybe_stash(dir, opts) do
     if opts[:stash] do
-      {state, _} = GitWorker.git(dir, ~w(stash))
+      {state, _} = GitCommand.stash(dir)
       state
     else
       :ok
@@ -44,14 +44,14 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp maybe_un_stash(dir, opts) do
-    if opts[:stash] && stash_count(dir) > 0 do
-      GitWorker.git(dir, ~w(stash pop))
+    if opts[:stash] do
+      GitCommand.stash_pop(dir)
     end
   end
 
   defp changelog(dir, branch) do
     with {:ok, changelog} <-
-           GitWorker.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""]) do
+           GitCommand.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""]) do
       reverse_changelog(changelog) <> "\n"
     else
       _ -> ""
@@ -67,7 +67,7 @@ defmodule Mix.Tasks.Git.Update do
 
   defp file_change_diff(dir, branch, file_name) do
     with {:ok, diff} <-
-           GitWorker.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name]),
+           GitCommand.git(dir, ["diff", "#{branch}..origin/#{branch}", "--", file_name]),
          true <- String.length(diff) > 0 do
       "\n=== #{file_name} ===\n" <> print_file_diff(diff)
     else
@@ -88,7 +88,7 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   def pull(dir) do
-    {_, pull_output} = GitWorker.git(dir, ~w(pull))
+    {_, pull_output} = GitCommand.git(dir, ~w(pull))
 
     up_to_date =
       ["Already up to date.", "Bereits aktuell."]
@@ -106,15 +106,5 @@ defmodule Mix.Tasks.Git.Update do
     |> String.split("\n")
     |> Enum.reverse()
     |> Enum.join("\n")
-  end
-
-  defp stash_count(dir) do
-    with {:ok, output} <- GitWorker.git(dir, ~w(stash list)) do
-      output
-      |> String.split("\n")
-      |> Enum.count(&(String.length(&1) > 0))
-    else
-      _ -> 0
-    end
   end
 end
