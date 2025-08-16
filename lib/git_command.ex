@@ -2,16 +2,18 @@ defmodule GitCommand do
   def git(repo_dir, args) when is_list(args) do
     {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
 
-    if exit_code != 0 do
-      IO.warn(
-        OutputFormatter.error("git #{args} failed for #{repo_dir}\n") <>
-          output
-      )
+    case exit_code do
+      0 ->
+        {:ok, output}
 
-      {:error, output}
+      _ ->
+        IO.warn(
+          OutputFormatter.error("git #{args} failed for #{repo_dir}\n") <>
+            output
+        )
+
+        {:error, output}
     end
-
-    {:ok, output}
   end
 
   def status(dir) do
