@@ -26,3 +26,4 @@ updater-*.tar
 /tmp/
 
 /.elixir_ls/
+/.expert/
