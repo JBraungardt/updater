@@ -2,14 +2,19 @@ defmodule RepoWorker do
   def process_repos(action, opts \\ []) do
     base_dir = File.cwd!()
 
-    if File.exists?("#{base_dir}/.dicts") do
-      File.stream!("#{base_dir}/.dicts")
-      |> Enum.map(&String.trim/1)
-      |> Enum.flat_map(&collect_repos(&1, base_dir))
-    else
-      (Path.wildcard("*/.git", match_dot: true) ++ Path.wildcard("*/*/.git", match_dot: true))
-      |> Enum.map(&Path.dirname/1)
-      |> Enum.map(&Path.absname(&1, base_dir))
+    cond do
+      File.dir?("#{base_dir}/.git") ->
+        [base_dir]
+
+      File.exists?("#{base_dir}/.dicts") ->
+        File.stream!("#{base_dir}/.dicts")
+        |> Enum.map(&String.trim/1)
+        |> Enum.flat_map(&collect_repos(&1, base_dir))
+
+      true ->
+        (Path.wildcard("*/.git", match_dot: true) ++ Path.wildcard("*/*/.git", match_dot: true))
+        |> Enum.map(&Path.dirname/1)
+        |> Enum.map(&Path.absname(&1, base_dir))
     end
     |> Task.async_stream(fn dir -> action.(dir, opts) end,
       timeout: :infinity,
