@@ -1,4 +1,6 @@
 defmodule RepoWorker do
+  require Logger
+
   def process_repos(action, opts \\ []) do
     base_dir = File.cwd!()
 
@@ -12,7 +14,7 @@ defmodule RepoWorker do
         |> Enum.flat_map(&collect_repos(&1, base_dir))
 
       true ->
-        (Path.wildcard("*/.git", match_dot: true) ++ Path.wildcard("*/*/.git", match_dot: true))
+        find_git_dirs()
         |> Enum.map(&Path.dirname/1)
         |> Enum.map(&Path.absname(&1, base_dir))
     end
@@ -33,5 +35,20 @@ defmodule RepoWorker do
 
   defp is_git_dir?(dir) do
     File.dir?(dir)
+  end
+
+  defp find_git_dirs() do
+    depth =
+      System.get_env("GIT_DIR_SEARCH_DEPTH", "2")
+      |> String.to_integer()
+
+    if depth < 1 do
+      Logger.error("GIT_DIR_SEARCH_DEPTH must be greater than 0 got #{depth}")
+      raise "GIT_DIR_SEARCH_DEPTH must be greater than 0"
+    end
+
+    Enum.reduce(1..depth, [], fn level, acc ->
+      acc ++ Path.wildcard("#{String.duplicate("*/", level)}.git", match_dot: true)
+    end)
   end
 end
