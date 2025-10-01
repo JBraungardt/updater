@@ -48,7 +48,9 @@ defmodule RepoWorker do
     end
 
     Enum.reduce(1..depth, [], fn level, acc ->
-      acc ++ Path.wildcard("#{String.duplicate("*/", level)}.git", match_dot: true)
+      acc ++
+        (Path.wildcard("#{String.duplicate("*/", level)}.git", match_dot: true)
+         |> Enum.filter(&File.dir?/1))
     end)
   end
 end
