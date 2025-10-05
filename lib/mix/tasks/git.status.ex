@@ -4,7 +4,9 @@ defmodule Mix.Tasks.Git.Status do
   @shortdoc "Shows the status of the repositories"
 
   @impl true
-  def run(_) do
+  def run(args) do
+    StartArgs.parse(args)
+
     RepoWorker.process_repos(&get_status/2)
   end
 

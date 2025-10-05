@@ -1,6 +1,6 @@
 defmodule GitCommand do
   def git(repo_dir, args) when is_list(args) do
-    OutputFormatter.log_verbose("git #{args} in #{repo_dir}")
+    OutputFormatter.log_verbose("git #{Enum.join(args, "")} in #{repo_dir}")
 
     {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
 
@@ -32,7 +32,7 @@ defmodule GitCommand do
 
   def stash(dir) do
     with {:ok, status} <- status(dir),
-         true <- String.length(status) > 0 do
+         _ <- String.length(status) > 0 do
       git(dir, ~w(stash))
     else
       _ -> {:error, "Stash failed"}

@@ -3,13 +3,13 @@ defmodule Mix.Tasks.Git.Update do
 
   @shortdoc "Updates the repositories"
 
+  @params [
+    stash: :boolean
+  ]
+
   @impl true
   def run(args) do
-    {opts, _} = OptionParser.parse!(args, strict: [stash: :boolean, verbose: :boolean])
-
-    if opts[:verbose] do
-      Application.put_env(:updater, :verbose, true)
-    end
+    opts = StartArgs.parse(args, @params)
 
     RepoWorker.process_repos(&process_repo/2, opts)
   end

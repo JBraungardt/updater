@@ -4,7 +4,9 @@ defmodule Mix.Tasks.Git.Branch do
   @shortdoc "List the current branch of the repos"
 
   @impl true
-  def run(_) do
+  def run(args) do
+    StartArgs.parse(args)
+
     RepoWorker.process_repos(&branch/2)
   end
 

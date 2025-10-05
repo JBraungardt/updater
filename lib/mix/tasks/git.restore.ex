@@ -4,7 +4,9 @@ defmodule Mix.Tasks.Git.Restore do
   @shortdoc "Revert all changes of the repositories"
 
   @impl true
-  def run(_) do
+  def run(args) do
+    StartArgs.parse(args)
+
     RepoWorker.process_repos(&restore/2)
   end
 
