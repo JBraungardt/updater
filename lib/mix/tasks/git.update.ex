@@ -5,7 +5,12 @@ defmodule Mix.Tasks.Git.Update do
 
   @impl true
   def run(args) do
-    {opts, _} = OptionParser.parse!(args, strict: [stash: :boolean])
+    {opts, _} = OptionParser.parse!(args, strict: [stash: :boolean, verbose: :boolean])
+
+    if opts[:verbose] do
+      Application.put_env(:updater, :verbose, true)
+    end
+
     RepoWorker.process_repos(&process_repo/2, opts)
   end
 

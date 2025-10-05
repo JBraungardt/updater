@@ -1,4 +1,6 @@
 defmodule OutputFormatter do
+  require Logger
+
   def error(message) do
     IO.ANSI.red() <> message <> IO.ANSI.reset()
   end
@@ -26,5 +28,11 @@ defmodule OutputFormatter do
       end
     end)
     |> Enum.join("\n")
+  end
+
+  def log_verbose(message) do
+    if(Application.get_env(:updater, :verbose, false)) do
+      Logger.info(message)
+    end
   end
 end
