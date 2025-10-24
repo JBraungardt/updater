@@ -1,6 +1,6 @@
 defmodule GitCommand do
   def git(repo_dir, args) when is_list(args) do
-    OutputFormatter.log_verbose("git #{Enum.join(args, "")} in #{repo_dir}")
+    VerboseLogger.log("git #{Enum.join(args, "")} in #{repo_dir}")
 
     {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
 
