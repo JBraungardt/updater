@@ -18,6 +18,7 @@ defmodule RepoWorker do
         |> Enum.map(&Path.dirname/1)
         |> Enum.map(&Path.absname(&1, base_dir))
     end
+    |> remove_blacklisted_repos()
     |> Task.async_stream(fn dir -> action.(dir, opts) end,
       timeout: :infinity,
       ordered: false
@@ -51,6 +52,22 @@ defmodule RepoWorker do
       acc ++
         (Path.wildcard("#{String.duplicate("*/", level)}.git", match_dot: true)
          |> Enum.filter(&File.dir?/1))
+    end)
+  end
+
+  defp remove_blacklisted_repos(repos) do
+    black_list_file = Path.join(File.cwd!(), ".ignoreRepos")
+
+    black_list =
+      if File.exists?(black_list_file) do
+        File.stream!(black_list_file)
+        |> Enum.map(&String.trim/1)
+      else
+        []
+      end
+
+    Enum.reject(repos, fn repo ->
+      Enum.any?(black_list, &String.ends_with?(repo, &1))
     end)
   end
 end
