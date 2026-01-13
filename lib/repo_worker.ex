@@ -39,13 +39,11 @@ defmodule RepoWorker do
   end
 
   defp find_git_dirs() do
-    depth =
-      System.get_env("GIT_DIR_SEARCH_DEPTH", "2")
-      |> String.to_integer()
+    depth = Application.get_env(:updater, :depth)
 
     if depth < 1 do
-      Logger.error("GIT_DIR_SEARCH_DEPTH must be greater than 0 got #{depth}")
-      raise "GIT_DIR_SEARCH_DEPTH must be greater than 0"
+      Logger.error("depth must be greater than 0 got #{depth}")
+      raise "depth must be greater than 0"
     end
 
     Enum.reduce(1..depth, [], fn level, acc ->

@@ -1,6 +1,4 @@
 defmodule OutputFormatter do
-  require Logger
-
   def error(message) do
     IO.ANSI.red() <> message <> IO.ANSI.reset()
   end
