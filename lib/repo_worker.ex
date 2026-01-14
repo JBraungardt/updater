@@ -11,12 +11,10 @@ defmodule RepoWorker do
       File.exists?("#{base_dir}/.dicts") ->
         File.stream!("#{base_dir}/.dicts")
         |> Enum.map(&String.trim/1)
-        |> Enum.flat_map(&collect_repos(&1, base_dir))
+        |> Enum.flat_map(&collect_repos_in_dir(&1, base_dir))
 
       true ->
-        find_git_dirs()
-        |> Enum.map(&Path.dirname/1)
-        |> Enum.map(&Path.absname(&1, base_dir))
+        collect_repos_in_dir(".", base_dir)
     end
     |> remove_blacklisted_repos()
     |> Task.async_stream(fn dir -> action.(dir, opts) end,
@@ -26,19 +24,14 @@ defmodule RepoWorker do
     |> Enum.each(fn {:ok, output} -> IO.write(output) end)
   end
 
-  defp collect_repos(dir, base_dir) do
-    dir = Path.absname(dir, base_dir)
-
-    File.ls!(dir)
-    |> Enum.filter(&is_git_dir?("#{dir}/#{&1}/.git"))
-    |> Enum.map(&Path.absname(&1, dir))
+  defp collect_repos_in_dir(dir, base_dir) do
+    Path.absname(dir, base_dir)
+    |> find_git_dirs()
+    |> Enum.map(&Path.dirname/1)
+    |> Enum.map(&Path.absname(&1, base_dir))
   end
 
-  defp is_git_dir?(dir) do
-    File.dir?(dir)
-  end
-
-  defp find_git_dirs() do
+  defp find_git_dirs(dir) do
     depth = Application.get_env(:updater, :depth)
 
     if depth < 1 do
@@ -48,7 +41,7 @@ defmodule RepoWorker do
 
     Enum.reduce(1..depth, [], fn level, acc ->
       acc ++
-        (Path.wildcard("#{String.duplicate("*/", level)}.git", match_dot: true)
+        (Path.wildcard("#{dir}/#{String.duplicate("*/", level)}.git", match_dot: true)
          |> Enum.filter(&File.dir?/1))
     end)
   end
