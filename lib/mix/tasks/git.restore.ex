@@ -1,16 +1,10 @@
 defmodule Mix.Tasks.Git.Restore do
-  use Mix.Task
+  use RepoTask
 
   @shortdoc "Revert all changes of the repositories"
 
-  @impl true
-  def run(args) do
-    StartArgs.parse(args)
-
-    RepoWorker.process_repos(&restore/2)
-  end
-
-  defp restore(dir, _opts) do
+  @impl RepoTask
+  def action(dir, _opts) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          {:ok, status} <- GitCommand.status(dir),
          true <- String.length(status) > 0,

@@ -1,20 +1,10 @@
 defmodule Mix.Tasks.Git.Update do
-  use Mix.Task
+  use RepoTask, params: [stash: :boolean]
 
   @shortdoc "Updates the repositories"
 
-  @params [
-    stash: :boolean
-  ]
-
-  @impl true
-  def run(args) do
-    opts = StartArgs.parse(args, @params)
-
-    RepoWorker.process_repos(&process_repo/2, opts)
-  end
-
-  defp process_repo(dir, opts) do
+  @impl RepoTask
+  def action(dir, opts) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          :ok <- maybe_stash(dir, opts),
          {:ok, _} <- GitCommand.git(dir, ~w(fetch)) do

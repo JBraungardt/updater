@@ -1,7 +1,20 @@
 defmodule RepoWorker do
   require Logger
 
-  def process_repos(action, opts \\ []) do
+  @doc """
+  Processes all repositories using the given RepoTask module.
+
+  ## Parameters
+
+    * `task_module` - A module implementing the `RepoTask` behavior
+    * `opts` - A keyword list of options to pass to the task's action/2 callback
+
+  ## Examples
+
+      RepoWorker.process_repos(Mix.Tasks.Git.Status, [])
+      RepoWorker.process_repos(Mix.Tasks.Git.Update, stash: true)
+  """
+  def process_repos(task_module, opts \\ []) do
     base_dir = File.cwd!()
 
     cond do
@@ -17,7 +30,7 @@ defmodule RepoWorker do
         collect_repos_in_dir(".", base_dir)
     end
     |> remove_blacklisted_repos()
-    |> Task.async_stream(fn dir -> action.(dir, opts) end,
+    |> Task.async_stream(fn dir -> task_module.action(dir, opts) end,
       timeout: :infinity,
       ordered: false
     )

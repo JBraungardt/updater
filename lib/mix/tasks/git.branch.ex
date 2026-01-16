@@ -1,16 +1,10 @@
 defmodule Mix.Tasks.Git.Branch do
-  use Mix.Task
+  use RepoTask
 
   @shortdoc "List the current branch of the repos"
 
-  @impl true
-  def run(args) do
-    StartArgs.parse(args)
-
-    RepoWorker.process_repos(&branch/2)
-  end
-
-  defp branch(dir, _opts) do
+  @impl RepoTask
+  def action(dir, _opts) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir) do
       OutputFormatter.repo_header(dir, branch)
     else
