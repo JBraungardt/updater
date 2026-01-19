@@ -34,6 +34,7 @@ defmodule RepoWorker do
       timeout: :infinity,
       ordered: false
     )
+    |> Enum.filter(fn {:ok, output} -> !is_nil(output) end)
     |> Enum.each(fn {:ok, output} -> IO.write(output) end)
   end
 
@@ -52,11 +53,7 @@ defmodule RepoWorker do
       raise "depth must be greater than 0"
     end
 
-    Enum.reduce(1..depth, [], fn level, acc ->
-      acc ++
-        (Path.wildcard("#{dir}/#{String.duplicate("*/", level)}.git", match_dot: true)
-         |> Enum.filter(&File.dir?/1))
-    end)
+    find_git_dirs_recursive(dir, 1, depth)
   end
 
   defp remove_blacklisted_repos(repos) do
@@ -73,5 +70,18 @@ defmodule RepoWorker do
     Enum.reject(repos, fn repo ->
       Enum.any?(black_list, &String.ends_with?(repo, &1))
     end)
+  end
+
+  defp find_git_dirs_recursive(_dir, current_level, max_depth)
+       when current_level > max_depth,
+       do: []
+
+  defp find_git_dirs_recursive(dir, current_level, max_depth) do
+    current_repos =
+      "#{dir}/#{String.duplicate("*/", current_level)}.git"
+      |> Path.wildcard(match_dot: true)
+      |> Enum.filter(&File.dir?/1)
+
+    current_repos ++ find_git_dirs_recursive(dir, current_level + 1, max_depth)
   end
 end

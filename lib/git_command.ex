@@ -1,6 +1,8 @@
 defmodule GitCommand do
+  require Logger
+
   def git(repo_dir, args) when is_list(args) do
-    VerboseLogger.log("git #{Enum.join(args, "")} in #{repo_dir}")
+    VerboseLogger.log("git #{Enum.join(args, " ")} in #{repo_dir}")
 
     {output, exit_code} = System.cmd("git", args, cd: repo_dir, stderr_to_stdout: true)
 
@@ -9,7 +11,7 @@ defmodule GitCommand do
         {:ok, output}
 
       _ ->
-        IO.warn(
+        Logger.error(
           OutputFormatter.error("git #{args} failed for #{repo_dir}\n") <>
             output
         )
@@ -32,7 +34,7 @@ defmodule GitCommand do
 
   def stash(dir) do
     with {:ok, status} <- status(dir),
-         _ <- String.length(status) > 0 do
+         true <- String.trim(status) |> String.length() > 0 do
       git(dir, ~w(stash))
     else
       _ -> {:error, "Stash failed"}

@@ -1,4 +1,6 @@
 defmodule OutputFormatter do
+  @main_branch_names ~w(main master default develop)
+
   def error(message) do
     IO.ANSI.red() <> message <> IO.ANSI.reset()
   end
@@ -7,12 +9,10 @@ defmodule OutputFormatter do
     base_dir = File.cwd!()
 
     branch_color =
-      case branch do
-        "main" -> IO.ANSI.yellow()
-        "master" -> IO.ANSI.yellow()
-        "default" -> IO.ANSI.yellow()
-        "develop" -> IO.ANSI.yellow()
-        _ -> IO.ANSI.light_red_background() <> IO.ANSI.white()
+      if branch in @main_branch_names do
+        IO.ANSI.yellow()
+      else
+        IO.ANSI.light_red_background() <> IO.ANSI.white()
       end
 
     branch_text =
@@ -30,14 +30,12 @@ defmodule OutputFormatter do
   end
 
   def diff(diff) do
-    String.split(diff, "\n")
-    |> Enum.map(fn line ->
-      cond do
-        String.starts_with?(line, "-") -> IO.ANSI.red() <> line <> IO.ANSI.reset()
-        String.starts_with?(line, "+") -> IO.ANSI.green() <> line <> IO.ANSI.reset()
-        true -> line
-      end
+    diff
+    |> String.split("\n")
+    |> Enum.map_join("\n", fn
+      "-" <> _ = line -> IO.ANSI.red() <> line <> IO.ANSI.reset()
+      "+" <> _ = line -> IO.ANSI.green() <> line <> IO.ANSI.reset()
+      line -> line
     end)
-    |> Enum.join("\n")
   end
 end
