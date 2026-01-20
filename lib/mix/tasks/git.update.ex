@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Git.Update do
-  use RepoTask, params: [stash: :boolean]
+  use RepoTask, params: [stash: :boolean, explain: :boolean]
 
   @shortdoc "Updates the repositories"
 
@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Git.Update do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          :ok <- maybe_stash(dir, opts),
          {:ok, _} <- GitCommand.git(dir, ~w(fetch)) do
+      ai_summery = ExplainChanges.maybe_explain(dir, "#{branch}...origin/#{branch}", opts)
       changelog = changelog(dir, branch)
       diff = changes_diff(dir, branch)
       pull = pull(dir)
@@ -20,6 +21,7 @@ defmodule Mix.Tasks.Git.Update do
           "\n" <>
           pull <>
           diff <>
+          ai_summery <>
           "\n"
       end
     else
@@ -69,7 +71,7 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   def pull(dir) do
-    {_, pull_output} = GitCommand.git(dir, ~w(pull))
+    {_, pull_output} = GitCommand.git(dir, ~w(pull --no-recurse-submodules))
 
     up_to_date =
       ["Already up to date.", "Bereits aktuell."]
