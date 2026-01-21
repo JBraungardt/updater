@@ -19,7 +19,7 @@ defmodule ExplainChanges do
     end
   end
 
-  defp generate_explanation(dir, range) do
+  def generate_explanation(dir, range) do
     with {:ok, changelog} <- GitCommand.git(dir, ["log", range, "--pretty=format:\"* %B\""]),
          {:ok, diff} <- GitCommand.git(dir, ["diff", range, "-U#{@diff_context_lines}"]),
          false <- empty_content?(changelog, diff),
