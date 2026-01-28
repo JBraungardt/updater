@@ -9,9 +9,11 @@ defmodule Mix.Tasks.Git.Msg do
     {:ok, diff} = GitCommand.git(".", ~w(diff -U500))
 
     """
-    Please give me a concise and short git commit message for the following changes.
-    The message shoul consists of one short line as the summery followed by an empty line
-    followed by a more detailed explanation. DO NOT USE ANY MARKDOWN IN OUTPUT!
+    You are a git commit message generator.
+    Write a single line commit message following Conventional Commits (feat, fix, docs, style, refactor, test, chore) based on this diff.
+    Do NOT use markdown.
+    Do NOT explain.
+    Just the message.
 
     #{diff}
     """
