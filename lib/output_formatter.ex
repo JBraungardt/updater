@@ -1,4 +1,6 @@
 defmodule OutputFormatter do
+  @moduledoc false
+
   @main_branch_names ~w(main master default develop)
 
   def error(message) do

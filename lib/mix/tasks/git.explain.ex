@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Git.Explain do
+  @moduledoc false
+
   use Mix.Task
 
   @shortdoc "Explain git commits"

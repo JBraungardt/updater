@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Git.Update do
+  @moduledoc false
+
   use RepoTask, params: [stash: :boolean, explain: :boolean]
 
   @shortdoc "Updates the repositories"
@@ -45,10 +47,8 @@ defmodule Mix.Tasks.Git.Update do
   end
 
   defp changelog(dir, branch) do
-    with {:ok, changelog} <-
-           GitCommand.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""]) do
-      reverse_changelog(changelog) <> "\n"
-    else
+    case GitCommand.git(dir, ["log", "#{branch}..origin/#{branch}", "--pretty=format:\"%s\""]) do
+      {:ok, changelog} -> reverse_changelog(changelog) <> "\n"
       _ -> ""
     end
   end

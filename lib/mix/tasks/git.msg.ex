@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Git.Msg do
+  @moduledoc false
+
   use Mix.Task
 
   @shortdoc "Generate commit message for the changes in current git repo"

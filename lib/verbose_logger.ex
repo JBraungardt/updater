@@ -1,4 +1,6 @@
 defmodule VerboseLogger do
+  @moduledoc false
+
   require Logger
 
   def log(message) do

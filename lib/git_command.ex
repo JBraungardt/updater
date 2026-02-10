@@ -1,4 +1,8 @@
 defmodule GitCommand do
+  @moduledoc """
+  GitCommand is a module for running git commands in the context of a given repository.
+  """
+
   require Logger
 
   def git(repo_dir, args) when is_list(args) do
@@ -25,7 +29,7 @@ defmodule GitCommand do
   end
 
   def current_branch_name(dir) do
-    if is_detached?(dir) do
+    if detached?(dir) do
       {:error, "HEAD detached"}
     else
       current_branch(dir)
@@ -50,22 +54,26 @@ defmodule GitCommand do
   end
 
   defp stash_count(dir) do
-    with {:ok, output} <- GitCommand.git(dir, ~w(stash list)) do
-      output
-      |> String.split("\n")
-      |> Enum.count(&(String.length(&1) > 0))
-    else
-      _ -> 0
+    case GitCommand.git(dir, ~w(stash list)) do
+      {:ok, output} ->
+        output
+        |> String.split("\n")
+        |> Enum.count(&(String.length(&1) > 0))
+
+      _ ->
+        0
     end
   end
 
-  defp is_detached?(dir) do
-    with {:ok, output} <- git(dir, ~w(status)) do
-      output
-      |> String.split("\n")
-      |> Enum.any?(&String.starts_with?(&1, "HEAD detached at"))
-    else
-      _ -> false
+  defp detached?(dir) do
+    case git(dir, ~w(status)) do
+      {:ok, output} ->
+        output
+        |> String.split("\n")
+        |> Enum.any?(&String.starts_with?(&1, "HEAD detached at"))
+
+      _ ->
+        false
     end
   end
 

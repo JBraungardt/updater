@@ -1,4 +1,8 @@
 defmodule Ollama do
+  @moduledoc """
+  Ollama is a module for interacting with the Ollama API.
+  """
+
   @ollama_endpoint "http://localhost:11434/api/generate"
   @model "gpt-oss:20b"
 

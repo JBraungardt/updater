@@ -1,4 +1,8 @@
 defmodule RepoWorker do
+  @moduledoc """
+  A module for processing repositories using a given task.
+  """
+
   require Logger
 
   @doc """

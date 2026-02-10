@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Git.Status do
+  @moduledoc false
+
   use RepoTask
 
   @shortdoc "Shows the status of the repositories"

@@ -1,4 +1,8 @@
 defmodule ExplainChanges do
+  @moduledoc """
+  ExplainChanges is a module for generating explanations for git changes using ollama.
+  """
+
   require Logger
 
   @diff_context_lines 500

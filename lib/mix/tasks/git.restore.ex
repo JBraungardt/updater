@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Git.Restore do
+  @moduledoc false
+
   use RepoTask
 
   @shortdoc "Revert all changes of the repositories"
