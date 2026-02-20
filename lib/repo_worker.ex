@@ -38,7 +38,7 @@ defmodule RepoWorker do
       timeout: :infinity,
       ordered: false
     )
-    |> Enum.filter(fn {:ok, output} -> !is_nil(output) end)
+    |> Stream.filter(fn {:ok, output} -> !is_nil(output) end)
     |> Enum.each(fn {:ok, output} -> IO.write(output) end)
   end
 
