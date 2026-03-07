@@ -12,7 +12,7 @@ defmodule OutputFormatter do
 
     branch_color =
       if branch in @main_branch_names do
-        IO.ANSI.yellow()
+        IO.ANSI.light_green()
       else
         IO.ANSI.light_red_background() <> IO.ANSI.white()
       end
@@ -27,6 +27,13 @@ defmodule OutputFormatter do
       branch_text <>
       IO.ANSI.light_blue() <>
       " ===" <>
+      IO.ANSI.reset() <>
+      "\n"
+  end
+
+  def section(text) do
+    IO.ANSI.yellow() <>
+      text <>
       IO.ANSI.reset() <>
       "\n"
   end

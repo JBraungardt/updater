@@ -42,7 +42,7 @@ defmodule RepoWorker do
     |> Enum.each(fn {:ok, output} -> IO.write(output) end)
   end
 
-  defp collect_repos_in_dir(dir, base_dir) do
+  def collect_repos_in_dir(dir, base_dir) do
     Path.absname(dir, base_dir)
     |> find_git_dirs()
     |> Enum.map(&Path.dirname/1)
