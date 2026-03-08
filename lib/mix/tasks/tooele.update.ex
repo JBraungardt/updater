@@ -23,15 +23,9 @@ defmodule Mix.Tasks.Tooele.Update do
          {:ok, submodule} <- maybe_update_submodule(dir),
          {:ok, generate} <- maybe_run_generate(dir) do
       OutputFormatter.repo_header(dir, branch) <>
-        OutputFormatter.section("PULL: \n") <>
-        pull <>
-        "\n" <>
-        OutputFormatter.section("SUBMODULE: \n") <>
-        submodule <>
-        "\n" <>
-        OutputFormatter.section("GENERATE: \n") <>
-        generate <>
-        "\n"
+        format_section("PULL:", pull) <>
+        format_section("SUBMODULE:", submodule) <>
+        format_section("GENERATE:", generate)
     else
       _ -> nil
     end
@@ -61,5 +55,11 @@ defmodule Mix.Tasks.Tooele.Update do
       false ->
         {:ok, ""}
     end
+  end
+
+  defp format_section(_title, ""), do: ""
+
+  defp format_section(title, content) do
+    OutputFormatter.section(title) <> "\n" <> content <> "\n"
   end
 end
