@@ -12,8 +12,11 @@ defmodule Mix.Tasks.Tooele.Update do
     tooele_dir = File.cwd!()
 
     RepoWorker.collect_repos_in_dir(".", tooele_dir)
-    |> Task.async_stream(&process_repo/1, timeout: :infinity, ordered: false)
-    |> Stream.filter(fn {:ok, output} -> !is_nil(output) end)
+    |> Task.async_stream(&process_repo/1, max_concurrency: 4, timeout: :infinity, ordered: false)
+    |> Stream.filter(fn
+      {:ok, output} -> !is_nil(output)
+      {:error, _} -> false
+    end)
     |> Enum.each(fn {:ok, output} -> IO.write(output) end)
   end
 
