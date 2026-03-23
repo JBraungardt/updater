@@ -23,8 +23,8 @@ defmodule Mix.Tasks.Tooele.Update do
   defp process_repo(dir) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          {:ok, pull} <- GitCommand.git(dir, ~w(pull --no-recurse-submodules)),
-         {:ok, submodule} <- maybe_update_submodule(dir),
-         {:ok, generate} <- maybe_run_generate(dir) do
+         {:ok, submodule} <- maybe_update_submodule(dir, pull),
+         {:ok, generate} <- maybe_run_generate(dir, pull) do
       OutputFormatter.repo_header(dir, branch) <>
         format_section("PULL:", pull) <>
         format_section("SUBMODULE:", submodule) <>
@@ -34,7 +34,15 @@ defmodule Mix.Tasks.Tooele.Update do
     end
   end
 
-  defp maybe_update_submodule(dir) do
+  defp maybe_update_submodule(dir, pull_output) do
+    if up_to_date?(pull_output) do
+      {:ok, ""}
+    else
+      do_update_submodule(dir)
+    end
+  end
+
+  defp do_update_submodule(dir) do
     case File.exists?(Path.absname(".gitmodules", dir)) do
       true ->
         case GitCommand.git(dir, ~w(submodule update --init)) do
@@ -47,7 +55,15 @@ defmodule Mix.Tasks.Tooele.Update do
     end
   end
 
-  defp maybe_run_generate(dir) do
+  defp maybe_run_generate(dir, pull_output) do
+    if up_to_date?(pull_output) do
+      {:ok, ""}
+    else
+      do_run_generate(dir)
+    end
+  end
+
+  defp do_run_generate(dir) do
     case File.exists?(Path.absname("generate.bat", dir)) do
       true ->
         case System.cmd("cmd", ~w(/d /c generate.bat), cd: dir, stderr_to_stdout: true) do
@@ -58,6 +74,11 @@ defmodule Mix.Tasks.Tooele.Update do
       false ->
         {:ok, ""}
     end
+  end
+
+  defp up_to_date?(pull_output) when is_binary(pull_output) do
+    ["Already up to date.", "Bereits aktuell."]
+    |> Enum.any?(&String.contains?(pull_output, &1))
   end
 
   defp format_section(_title, ""), do: ""
