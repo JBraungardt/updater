@@ -4,11 +4,10 @@ defmodule Ollama do
   """
 
   @ollama_endpoint "http://localhost:11434/api/generate"
-  @model "gpt-oss:20b"
 
-  def call(prompt) do
+  def call(prompt, model \\ "mistral-nemo:latest") do
     payload = %{
-      model: @model,
+      model: model,
       prompt: prompt,
       stream: false
     }
