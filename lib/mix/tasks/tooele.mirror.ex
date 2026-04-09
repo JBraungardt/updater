@@ -9,10 +9,14 @@ defmodule Mix.Tasks.Tooele.Mirror do
 
   @impl true
   def run(args) do
-    opts = OptionParser.parse!(args, strict: [mirror: :boolean])
-    {[mirror: use_mirror], []} = opts
+    {opts, []} = OptionParser.parse!(args, strict: [mirror: :boolean])
 
+    use_mirror = Keyword.get(opts, :mirror, nil)
     use_mirror(use_mirror)
+  end
+
+  defp use_mirror(nil) do
+    Mix.shell().info("Mirror is #{File.exists?(Path.expand(@config_file))}")
   end
 
   defp use_mirror(false) do
