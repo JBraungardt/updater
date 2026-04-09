@@ -9,6 +9,7 @@ defmodule ExplainChanges do
   @system_prompt """
   You are a helpful assistant. Output your answer in plain text only.
   Do not use Markdown formatting (no bold, italics, or headers).
+  Do not print the diff!
   DO NOT CALL ANY TOOL!
   DO NOT OUTPUT MARKDOWN SYNTAX!
   """
