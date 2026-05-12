@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Git.Update do
   def action(dir, opts) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          :ok <- maybe_stash(dir, opts),
-         {:ok, _} <- GitCommand.git(dir, ~w(fetch)) do
+         {:ok, _} <- GitCommand.git(dir, ~w(fetch --tags --force)) do
       ai_summery = ExplainChanges.maybe_explain(dir, "#{branch}...origin/#{branch}", opts)
       changelog = changelog(dir, branch)
       diff = changes_diff(dir, branch)
