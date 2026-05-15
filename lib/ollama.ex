@@ -5,7 +5,7 @@ defmodule Ollama do
 
   @ollama_endpoint "http://localhost:11434/api/generate"
 
-  def call(prompt, model \\ "mistral-nemo:latest") do
+  def call(prompt, model \\ "mrthp/omnicoder2:latest") do
     payload = %{
       model: model,
       prompt: prompt,
