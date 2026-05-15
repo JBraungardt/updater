@@ -35,9 +35,6 @@ defmodule ExplainChanges do
       {:error, reason} ->
         Logger.warning("Explanation failed: #{inspect(reason)}")
         ""
-
-      _ ->
-        ""
     end
   end
 
