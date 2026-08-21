@@ -9,13 +9,29 @@ defmodule Mix.Tasks.Tooele.Mirror do
 
   @impl true
   def run(args) do
-    {opts, []} = OptionParser.parse!(args, strict: [mirror: :boolean])
+    {opts, []} = OptionParser.parse!(args, strict: [on: :boolean, off: :boolean, mirror: :boolean])
 
-    use_mirror = Keyword.get(opts, :mirror, nil)
-    use_mirror(use_mirror)
+    enable? = Enum.any?(opts, &(&1 in [on: true, mirror: true]))
+    disable? = Enum.any?(opts, &(&1 in [off: true, mirror: false]))
+
+    case {enable?, disable?} do
+      {true, false} ->
+        use_mirror(true)
+
+      {false, true} ->
+        use_mirror(false)
+
+      {false, false} ->
+        check_mirror()
+
+      {true, true} ->
+        Mix.raise(
+          "Cannot combine mirror enable options (--on, --mirror) with disable options (--off, --no-mirror)"
+        )
+    end
   end
 
-  defp use_mirror(nil) do
+  defp check_mirror() do
     Mix.shell().info("Mirror is #{File.exists?(Path.expand(@config_file))}")
   end
 
