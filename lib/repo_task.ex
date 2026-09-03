@@ -57,6 +57,8 @@ defmodule RepoTask do
     * `nil` if there is no output for this repository
   """
   @callback action(dir :: String.t(), opts :: Keyword.t()) :: String.t() | nil
+  @callback clear() :: any()
+  @optional_callbacks clear: 0
 
   @doc false
   defmacro __using__(opts \\ []) do
@@ -67,6 +69,11 @@ defmodule RepoTask do
       use Mix.Task
 
       @params unquote(params)
+
+      @impl RepoTask
+      def clear, do: nil
+
+      defoverridable clear: 0
 
       @impl Mix.Task
       def run(args) do

@@ -21,6 +21,8 @@ defmodule RepoWorker do
   def process_repos(task_module, opts \\ []) do
     base_dir = File.cwd!()
 
+    task_module.clear()
+
     cond do
       File.dir?("#{base_dir}/.git") ->
         [base_dir]

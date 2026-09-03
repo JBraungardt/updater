@@ -6,6 +6,9 @@ defmodule Mix.Tasks.Git.Update do
   @shortdoc "Updates the repositories"
 
   @impl RepoTask
+  def clear, do: IO.write(IO.ANSI.clear())
+
+  @impl RepoTask
   def action(dir, opts) do
     with {:ok, branch} <- GitCommand.current_branch_name(dir),
          :ok <- maybe_stash(dir, opts),
